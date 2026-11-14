@@ -108,7 +108,7 @@ button:active { background: #087da0; }
     <button onclick="startListening()">🎙 تحدث</button>
   </div>
 
-  <div id="reply">مرحباً، أنا A.Z Assistant. كيف أستطيع مساعدتك؟</div>
+  <div id="reply">مرحباً، أنا Jarvis. كيف أستطيع مساعدتك؟</div>
 </main>
 
 <script>
@@ -124,6 +124,45 @@ function speak(text) {
   voice.rate = 0.9;
   voice.pitch = 0.85;
   speechSynthesis.speak(voice);
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  function useArabicVoice() {
+    const voices = speechSynthesis.getVoices();
+
+    const arabicVoices = voices.filter(v =>
+      v.lang.toLowerCase().startsWith("ar")
+    );
+
+    const preferred = arabicVoices.find(v =>
+      /maged|majid|tarik|tariq|hamed|hamid/i.test(v.name)
+    );
+
+    const selectedVoice = preferred || arabicVoices[0];
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.lang = "ar";
+    utterance.rate = 0.88;
+    utterance.pitch = 0.85;
+    utterance.volume = 1;
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    speechSynthesis.speak(utterance);
+  }
+
+  if (speechSynthesis.getVoices().length > 0) {
+    useArabicVoice();
+  } else {
+    speechSynthesis.onvoiceschanged = useArabicVoice;
+  }
+}
+
 }
 
 function sendMessage() {
