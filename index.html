@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050b16">
+<title>A.Z Assistant</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at center, #10243b, #050914 70%);
+  color: #eaf8ff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.app {
+  width: 92%;
+  max-width: 480px;
+  padding: 30px 20px;
+}
+
+h1 {
+  color: #56dfff;
+  letter-spacing: 3px;
+  font-size: 30px;
+  text-shadow: 0 0 18px #00bfff;
+}
+
+.subtitle {
+  color: #8daec5;
+  font-size: 14px;
+}
+
+.orb {
+  width: 190px;
+  height: 190px;
+  margin: 45px auto 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #b9f7ff 0%, #13bce8 18%, #075080 48%, #061426 70%);
+  box-shadow: 0 0 25px #00cfff, 0 0 75px #007bbd;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  50% { transform: scale(1.08); box-shadow: 0 0 45px #00dfff, 0 0 100px #007bbd; }
+}
+
+.status {
+  color: #63dfff;
+  margin: 20px;
+  min-height: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid #17658a;
+  border-radius: 12px;
+  background: #0b1a2b;
+  color: white;
+  font-size: 16px;
+  outline: none;
+}
+
+button {
+  margin: 12px 4px;
+  padding: 13px 22px;
+  border: 1px solid #38d9ff;
+  border-radius: 12px;
+  background: #07334a;
+  color: white;
+  font-size: 15px;
+}
+
+button:active { background: #087da0; }
+
+#reply {
+  color: #c4e9f5;
+  line-height: 1.8;
+  min-height: 45px;
+  margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+  <h1>A.Z ASSISTANT</h1>
+  <p class="subtitle">YOUR PERSONAL AI SYSTEM</p>
+
+  <div class="orb"></div>
+
+  <div class="status" id="status">SYSTEM ONLINE</div>
+
+  <input id="message" placeholder="اكتب أمرك للمساعد..." />
+
+  <div>
+    <button onclick="sendMessage()">إرسال الأمر</button>
+    <button onclick="startListening()">🎙 تحدث</button>
+  </div>
+
+  <div id="reply">مرحباً، أنا A.Z Assistant. كيف أستطيع مساعدتك؟</div>
+</main>
+
+<script>
+const statusText = document.getElementById("status");
+const reply = document.getElementById("reply");
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+  const voice = new SpeechSynthesisUtterance(text);
+  voice.lang = "ar";
+  voice.rate = 0.9;
+  voice.pitch = 0.85;
+  speechSynthesis.speak(voice);
+}
+
+function sendMessage() {
+  const message = document.getElementById("message").value.trim();
+
+  if (!message) return;
+
+  let answer = "وصلني أمرك. ما زلت في مرحلة الإعداد، وسيتم ربط الذكاء الاصطناعي في المرحلة القادمة.";
+
+  if (message.includes("مرحبا") || message.includes("مرحبا")) {
+    answer = "أهلاً بك. نظام A.Z Assistant جاهز.";
+  } else if (message.includes("اسمك")) {
+    answer = "أنا A.Z Assistant، مساعدك الشخصي.";
+  } else if (message.includes("الوقت")) {
+    answer = "الوقت الآن " + new Date().toLocaleTimeString("ar");
+  }
+
+  reply.textContent = answer;
+  statusText.textContent = "تم تنفيذ الأمر";
+  speak(answer);
+}
+
+function startListening() {
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!Recognition) {
+    statusText.textContent = "التعرف الصوتي غير مدعوم هنا. استخدم الكتابة حالياً.";
+    return;
+  }
+
+  const recognition = new Recognition();
+  recognition.lang = "ar";
+  recognition.onstart = () => statusText.textContent = "أستمع إليك...";
+  recognition.onresult = (event) => {
+    document.getElementById("message").value =
+      event.results[0][0].transcript;
+    sendMessage();
+  };
+  recognition.onerror = () => statusText.textContent = "تعذر التعرف على الصوت";
+  recognition.onend = () => {
+    if (statusText.textContent === "أستمع إليك...") {
+      statusText.textContent = "SYSTEM ONLINE";
+    }
+  };
+  recognition.start();
+}
+</script>
+</body>
+</html>
